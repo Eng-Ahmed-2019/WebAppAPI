@@ -1,12 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
+﻿using System.Text;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System;
-using System.Diagnostics.Tracing;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Orders.Services
 {

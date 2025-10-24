@@ -4,7 +4,6 @@ using Orders.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Orders.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container....!
