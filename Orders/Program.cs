@@ -4,6 +4,7 @@ using Orders.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Orders.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container....!
@@ -77,6 +78,7 @@ builder.Services.AddHttpClient("ProductApi", client =>
         client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
 });
+builder.Services.AddHostedService<Orders.Services.RabbitMqConsumerService>();
 
 var app = builder.Build();
 // Middleware pipeline....!
