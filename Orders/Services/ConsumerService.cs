@@ -15,43 +15,47 @@ namespace Orders.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var hostName = _configuration["RabbitMQ:HostName"];
-            var userName = _configuration["RabbitMQ:UserName"];
-            var password = _configuration["RabbitMQ:Password"];
-            var queueName = _configuration["RabbitMQ:QueueName"];
+            var hostName = _configuration["RabbitMQ:HostName"] ?? "localhost";
+            var userName = _configuration["RabbitMQ:UserName"] ?? "guest";
+            var password = _configuration["RabbitMQ:Password"] ?? "guest";
+            var queueName = _configuration["RabbitMQ:QueueName"] ?? "hello";
 
             var factory = new ConnectionFactory
             {
-                HostName = hostName ?? "localhost",
-                UserName = userName ?? "guest",
-                Password = password ?? "guest"
+                HostName = hostName,
+                UserName = userName,
+                Password = password
             };
 
             using var connection = await factory.CreateConnectionAsync();
             using var channel = await connection.CreateChannelAsync();
 
-            await channel.QueueDeclareAsync(queue: queueName ?? "hello",
-                                            durable: false,
-                                            exclusive: false,
-                                            autoDelete: false,
-                                            arguments: null
+            await channel.QueueDeclareAsync(
+                queue: queueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                arguments: null
             );
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
+            Console.WriteLine($" [*] Waiting for messages from queue \"{queueName}\"...");
 
-            consumer.ReceivedAsync += (model, ea) =>
+            var consumer = new AsyncEventingBasicConsumer(channel);
+            consumer.ReceivedAsync += async (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($" [Orders] Received Message: {message}");
-                return Task.CompletedTask;
+                Console.WriteLine($" [Orders] Received: {message}");
+                await Task.Yield();
             };
 
-            await channel.BasicConsumeAsync(queue: queueName ?? "hello",
+            await channel.BasicConsumeAsync(
+                queue: queueName,
                 autoAck: true,
                 consumer: consumer
             );
-            await Task.Delay(-1, stoppingToken);
+
+            await Task.Delay(Timeout.Infinite, stoppingToken);
         }
     }
 }
