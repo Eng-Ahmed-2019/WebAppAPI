@@ -1,5 +1,6 @@
 using System.Text;
 using Orders.Models;
+using Orders.Services;
 using Orders.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -78,6 +79,7 @@ builder.Services.AddHttpClient("ProductApi", client =>
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 builder.Services.AddHostedService<Orders.Services.ConsumerService>();
+builder.Services.AddScoped<ProducerService>();
 
 var app = builder.Build();
 // Middleware pipeline....!

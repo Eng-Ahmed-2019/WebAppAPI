@@ -1,5 +1,6 @@
 ﻿using Orders.DTOs;
 using Orders.Models;
+using Orders.Services;
 using Orders.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
@@ -247,6 +248,19 @@ namespace Orders.Controllers
                 Status = created.Status,
                 Items = itemsDto
             };
+
+            foreach(var item in created.Items)
+            {
+                var message = new
+                {
+                    OrderId = created.Id,
+                    ProductId = item.ProductId,
+                    QuantityOrdered = item.Quantity
+                };
+                var producer = HttpContext.RequestServices.GetRequiredService<ProducerService>();
+                await producer.SendOrderCreatedMessageAsync(message);
+            }
+
             return CreatedAtAction(nameof(GetOrder), new { id = created.Id }, dtoResult);
         }
 
