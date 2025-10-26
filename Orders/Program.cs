@@ -77,7 +77,7 @@ builder.Services.AddHttpClient("ProductApi", client =>
         client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
 });
-builder.Services.AddHostedService<Orders.Services.RabbitMqConsumerService>();
+builder.Services.AddHostedService<Orders.Services.ConsumerService>();
 
 var app = builder.Build();
 // Middleware pipeline....!
