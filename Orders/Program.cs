@@ -78,7 +78,6 @@ builder.Services.AddHttpClient("ProductApi", client =>
         client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
 });
-builder.Services.AddHostedService<Orders.Services.ConsumerService>();
 builder.Services.AddScoped<ProducerService>();
 
 var app = builder.Build();
