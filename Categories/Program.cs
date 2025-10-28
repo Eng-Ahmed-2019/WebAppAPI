@@ -78,7 +78,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseCors("AllowReactApp");
+app.UseCors(builder =>
+    builder.WithOrigins("http://localhost:3000")
+           .AllowAnyHeader()
+           .AllowAnyMethod()
+           .AllowCredentials());
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
