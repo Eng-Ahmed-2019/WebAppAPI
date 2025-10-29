@@ -28,24 +28,25 @@ namespace Orders.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
         {
+            var isAdmin = User.IsInRole("Admin");
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
            ?? User.FindFirst("sub")?.Value
            ?? User.FindFirst("id")?.Value
            ?? User.FindFirst("userId")?.Value
            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
+            if (!isAdmin && string.IsNullOrEmpty(userId))
                 return Unauthorized("User ID not found in token.");
 
-            var orders = (await _repo.GetAllAsync())
-                .Where(o => o.UserId == userId)
-                .ToList();
+            var allOrders = await _repo.GetAllAsync();
+            var orders = isAdmin
+                ? allOrders.ToList()
+                : allOrders.Where(o => o.UserId == userId).ToList();
 
             if (!orders.Any())
                 return NotFound("No orders found for this user.");
 
             var productClient = _httpFactory.CreateClient("ProductApi");
-
             var token = HttpContext.Request.Headers["Authorization"].ToString();
             if (!string.IsNullOrEmpty(token))
             {
