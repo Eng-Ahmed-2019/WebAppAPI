@@ -26,8 +26,16 @@ namespace Orders.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
         {
-            var orders = (await _repo.GetAllAsync()).ToList();
-            if (!orders.Any()) return NotFound("No orders found here yet.");
+            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User ID not found in token.");
+
+            var orders = (await _repo.GetAllAsync())
+                .Where(o => o.UserId == userId)
+                .ToList();
+
+            if (!orders.Any())
+                return NotFound("No orders found for this user.");
 
             var productClient = _httpFactory.CreateClient("ProductApi");
 
@@ -52,11 +60,6 @@ namespace Orders.Controllers
                         {
                             var prod = await prodResp.Content.ReadFromJsonAsync<ProductDto>();
                             productName = prod?.Name;
-                        }
-                        else
-                        {
-                            _logger.LogWarning("Failed to fetch product {ProductId}: {StatusCode}",
-                                               item.ProductId, prodResp.StatusCode);
                         }
                     }
                     catch (Exception ex)
@@ -83,6 +86,7 @@ namespace Orders.Controllers
                     Items = itemsDto
                 });
             }
+
             return Ok(results);
         }
 
