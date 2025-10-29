@@ -15,7 +15,7 @@ namespace Orders.Controllers
         private readonly IOrderRepository _repo;
         private readonly IHttpClientFactory _httpFactory;
         private readonly ILogger<OrdersController> _logger;
-
+        
         public OrdersController(IOrderRepository repo, IHttpClientFactory httpFactory, ILogger<OrdersController> logger)
         {
             _repo = repo;
@@ -232,9 +232,12 @@ namespace Orders.Controllers
                 });
             }
 
+            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("id")?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized("User ID not found in token.");
             var order = new Order
             {
-                UserId = dto.UserId,
+                UserId = userId,
                 OrderDate = DateTime.UtcNow,
                 Status = "Pending",
                 TotalAmount = items.Sum(i => i.Price * i.Quantity),
