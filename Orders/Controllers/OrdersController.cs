@@ -2,7 +2,9 @@
 using Orders.Models;
 using Orders.Services;
 using Orders.Repositories;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Orders.Controllers
@@ -232,7 +234,9 @@ namespace Orders.Controllers
                 });
             }
 
-            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("id")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+           ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User ID not found in token.");
             var order = new Order
