@@ -28,7 +28,12 @@ namespace Orders.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrders()
         {
-            var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("id")?.Value;
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+           ?? User.FindFirst("sub")?.Value
+           ?? User.FindFirst("id")?.Value
+           ?? User.FindFirst("userId")?.Value
+           ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
             if (string.IsNullOrEmpty(userId))
                 return Unauthorized("User ID not found in token.");
 
@@ -235,6 +240,9 @@ namespace Orders.Controllers
             }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+           ?? User.FindFirst("sub")?.Value
+           ?? User.FindFirst("id")?.Value
+           ?? User.FindFirst("userId")?.Value
            ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
 
             if (string.IsNullOrEmpty(userId))
