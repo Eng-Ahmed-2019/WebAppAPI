@@ -286,12 +286,14 @@ namespace Orders.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] string newStatus)
+        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
         {
             var order = await _repo.GetByIdAsync(id);
             if (order == null) return NotFound();
-            order.Status = newStatus;
+
+            order.Status = dto.NewStatus.Trim('"');
             await _repo.UpdateAsync(order);
+
             return NoContent();
         }
 
