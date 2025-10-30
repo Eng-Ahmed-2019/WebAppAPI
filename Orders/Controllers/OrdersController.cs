@@ -288,48 +288,10 @@ namespace Orders.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] string newStatus)
         {
-            // New Features today
             var order = await _repo.GetByIdAsync(id);
             if (order == null) return NotFound();
-
             order.Status = newStatus;
             await _repo.UpdateAsync(order);
-
-            if (newStatus.Equals("Cancelled", StringComparison.OrdinalIgnoreCase))
-            {
-                try
-                {
-                    var productClient = _httpFactory.CreateClient("ProductApi");
-                    var token = HttpContext.Request.Headers["Authorization"].ToString();
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        productClient.DefaultRequestHeaders.Authorization =
-                            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token.Replace("Bearer ", ""));
-                    }
-                    foreach (var item in order.Items)
-                    {
-                        var restoreRequest = new
-                        {
-                            ProductId = item.ProductId,
-                            Quantity = item.Quantity
-                        };
-                        var response = await productClient.PostAsJsonAsync("/api/products/restore-stock", restoreRequest);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            _logger.LogInformation("✅ Restored {Quantity} units to product {ProductId} after order cancellation.", item.Quantity, item.ProductId);
-                        }
-                        else
-                        {
-                            _logger.LogWarning("⚠️ Failed to restore stock for product {ProductId} after cancellation. Status: {StatusCode}", item.ProductId, response.StatusCode);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "❌ Error while restoring stock after cancelling order {OrderId}.", id);
-                }
-            }
-
             return NoContent();
         }
 
